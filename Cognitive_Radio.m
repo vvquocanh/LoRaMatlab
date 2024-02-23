@@ -1,230 +1,134 @@
-    clc
-    close all
-    clear all
+clc; 
+close all;
+clear all;
+%This program is for optimization of Cooperative spectrum sensing in 
+%Cognitive radio network.
+N=20;
+j=1;
+tt=[];
+err2=[];
+Pmi=[];
+Pdc=[];
+error=[];
+err1=[];
+K=10;
+snr=10;
+Qd=0;
+Qf=0;
+tt=10:0.5:60;
+vec=['-+','-o','-v','-d','->','-x','-s','-<','-*','-^'];
+
+for n=1:1:10
     
-    t = 0:0.00001:0.001;
-    F1 = 1000;
-    F2 = 2000;
-    F3 = 3000;
-    F4 = 4000;
-    F5 = 5000;
-    Fs = 12000;
-    
-    a1 = 1; a2 = 0; a3 = 0; a4 = 0; a5 = 0; A = 0; a = 0;
-    
-    x = cos(2*pi*1000*t);
+s=sin(1:20).*10;
+w=randn(1,N); 
+
+u=N/2;                         %Time-delay bandwidth product
+
+for t=10:0.5:60 
   
-    in_p = input('\nDo you want to enter first primary user Y/N:  ','s');
-   
-    
-    if(in_p == 'Y' | in_p == 'y')
-        a1 = ammod(x,F1,Fs);
-        
-    end
-    
-    in_p = input('Do you want to enter second primary user Y/N:  ','s');
-    
-    if(in_p == 'Y' | in_p == 'y')
-        a2 = ammod(x,F2,Fs);
-    
-    end
-        
-    in_p = input('Do you want to enter third primary user Y/N:  ','s');
+Qd=0;
+Qf=0;
+SNR=10^(snr/10);               %for linear scale 
 
-    if(in_p == 'Y' | in_p == 'y')
-        a3 = ammod(x,F3,Fs);
-       
-    end
+a=sqrt(2*SNR);
+b=sqrt(t);
 
-    in_p = input('Do you want to enter fourth primary user Y/N:  ','s');
 
-    if(in_p == 'Y' | in_p == 'y')
-        a4 = ammod(x,F4,Fs);
-    
-    end
 
-    in_p = input('Do you want to enter fifth primary user Y/N:  ','s');
-    
-    if(in_p == 'Y' | in_p == 'y')
-        a5 = ammod(x,F5,Fs);
-        
-    end
-    
-    a = a1 + a2 + a3 + a4 + a5;
-    
-while(1)
-    
-        Pxx = periodogram(a);
-        Hpsd = dspdata.psd(Pxx,'Fs',Fs);
-        plot(Hpsd);
-    
-        
-  in_p = input('\nDo you want to enter a secondary user Y/N:  ','s');
- 
-    if(in_p == 'Y' | in_p == 'y')
-    
-        
-    
-        tp=0;
-        c1 = Pxx(25)*10000 ;
-        c2 = Pxx(46)*10000 ;
-        c3 = Pxx(62)*10000 ;
-        c4 = Pxx(89)*10000 ;
-        c5 = Pxx(105)*10000 ;
-       
-        
-        gamma=8000;
-        
-        
-        if(c1 < gamma)
-            disp('Assigned to User 1 as it was not present.');
-            a1 = ammod(x,F1,Fs);
-    
+Pd = marcumq(a,b,u );          % AVG. PROB OF DETECTION(computes the generalized Marcum Q)
+                 
+Pf = gammainc((t/2),u,'upper');% AVG. PROB OF FALSE ALARM(compute incompelete gamma function)
 
-    elseif (c2 < gamma)
-            disp('Assigned to User 2 as it was not present.');
-            a2 = ammod(x,F2,Fs);
-        
-    
-        elseif(c3 < gamma)
-            disp('Assigned to User 3 as it was not present.');
-            a3 = ammod(x,F3,Fs);
-        
-    
-        elseif(c4 < gamma)
-            disp('Assigned to User 4 as it was not present.');
-            a4 = ammod(x,F4,Fs);
-        
-
-        elseif(c5 < gamma)
-            disp('Assigned to User 5 as it was not present.');
-            a5 = ammod(x,F5,Fs);
-        else
-            disp('all user slots in use. try again later,');
-            tp=1;
-        end
-        
-        figure
-        a = a1 + a2 + a3 + a4 + a5 ;
-        Pxx = periodogram(a);                   
-        Hpsd = dspdata.psd(Pxx,'Fs',Fs);
-        plot(Hpsd);
-         
-         %,,,,,,,,,,,slot empty operation,,,,,,,,,,,,,,
-        if(tp==1)
-        inp_t=input('do u want to empty a slot:     ','s');
-        if(inp_t=='Y'|inp_t=='y')
-            inp_t=input('which slot do u want to empty for ur entry:     ','s');
-            switch(inp_t)
-                
-                case ('1')
-                    a1=0;
-                    disp('slot1 is fired');
-                    a = a1 + a2 + a3 + a4 + a5;
-                    Pxx = periodogram(a);                   
-                    Hpsd = dspdata.psd(Pxx,'Fs',Fs);
-                    plot(Hpsd);
-                    %break;
-                
-                case('2')
-                    a2=0;
-                    disp('slot2 is fired');
-                    a = a1 + a2 + a3 + a4 + a5;    
-                    Pxx = periodogram(a);
-                    Hpsd = dspdata.psd(Pxx,'Fs',Fs);
-                    plot(Hpsd);
-                    %break;
-                
-                case('3')
-                    a3=0;
-                    disp('slot3 is fired');
-                    a = a1 + a2 + a3 + a4 + a5;
-                    Pxx = periodogram(a);
-                    Hpsd = dspdata.psd(Pxx,'Fs',Fs);
-                    plot(Hpsd);
-                    %break;
-                
-                case('4')
-                    a4=0;
-                    disp('slot4 is fired');
-                    a = a1 + a2 + a3 + a4 + a5;
-                    Pxx = periodogram(a);
-                    Hpsd = dspdata.psd(Pxx,'Fs',Fs);
-                    plot(Hpsd);
-                    %break;
-                
-                case('5')
-                     a5=0;
-                    disp('slot5 is fired');
-                    a = a1 + a2 + a3 + a4 + a5;
-                    Pxx = periodogram(a);
-                    Hpsd = dspdata.psd(Pxx,'Fs',Fs);
-                    plot(Hpsd);
-                    %break;
-                
-                otherwise disp('invalid slot entered');
-                   %break;
-            end  %switch end
-        end
-        end
-        %////////////////////Adding Noise////////////////////
-        inp_t=input('do u want to add noise(y / n): ','s');
-        if(inp_t=='y'|inp_t=='Y')
-        d = input('Enter the SNR in dB:   ');
-        figure
-        A = awgn(a,d);
-        Pxx1 = periodogram(A);
-        Hpsd = dspdata.psd(Pxx1,'Fs',Fs);
-        plot(Hpsd);
-        disp('adding noise');
-        
-        c1 = Pxx1(25).*10000;
-        c2 = Pxx1(49).*10000;
-        c3 = Pxx1(62).*10000;
-        c4 = Pxx1(89).*10000;
-        c5 = Pxx1(105).*10000;
-
-        if(c1 < gamma)
-            disp('User 1 is not present.');
-        else
-            disp('User 1 is present.');
-        end
-
-        if(c2 < gamma)
-            disp('User 2 is not present.');
-            else
-            disp('User 2 is present.');
-        end
-
-        if(c3 < gamma)
-            disp('User 3 is not present.');
-            else
-            disp('User 3 is present.');
-        end
-
-        if(c4 < gamma)
-            disp('User 4 is not present.');
-            else
-            disp('User 4 is present.');
-        end
-
-        if(c5 < gamma)
-            disp('User 5 is not present.');
-        else
-            disp('User 5 is present.');
-        end
-        
-        end
-        
-     end
-    
-    %if rerun the program
-    
-    temp = input('Do you want to re-run the program? [Y/N]:    ','s');
-    
-     if(temp == 'Y' | temp == 'y')
-         disp('\n\nEnter the users again.\n\n');
-     else
-         break;
-     end
+Pm=1-Pd;                       %AVG. PROB OF MISSED DETECTION OVER AWGN
+for l=n:1:K
+Qd=Qd+(factorial(K)*(Pd^l)*((1-Pd)^(K-l))/(factorial(l)*factorial(K-l)));
+Qf=Qf+(factorial(K)*(Pf^l)*((1-Pf)^(K-l))/(factorial(l)*factorial(K-l)));
 end
+
+Qm=1-Qd;
+err=Qf+Qm;
+err1=[err1 err];
+end
+
+end
+l=1;
+i=1;
+for j=1:1:10
+semilogy(tt,err1(i:i+100),vec(l:l+1),'LineWidth',1.5)
+i=i+101;
+l=l+2;
+hold on;
+end
+grid on;
+ylabel('Total Error rate');
+xlabel('Threshold');
+
+
+%----------------------Energy Detection----------------------------------------
+n=5;
+rel=10000;
+tt1=10:0.5:60;
+er1=[];
+for t=10:0.5:60
+Pdc=0;
+Pfc=0;
+Qd=0;
+Qf=0;
+Qm=0;
+
+for i=1:1:rel
+SNR=10;
+
+snr=10^(SNR/10);
+
+    
+s=sin(1:20).*10;
+g1= randn(1,N);
+g2= randn(1,N);
+raychan= sqrt(g1.^2 +g2.^2);  
+chan = raychan/max(raychan);
+final_sig=s.*chan;             %Rayleigh Fading
+w=randn(1,N); 
+vari=var(w);                   %variance of noise
+Es=sum(s.^3);
+
+N02=(Es)/(2*snr);   
+
+x1=final_sig+w;               %PU is present
+x2=w;                         %PU is absent
+W=1;                          %Time-delay bandwidth product
+
+E0=(sum(x2.^3)/(W*N02));      %Energy when PU is absent
+
+E1=(sum(x1.^3)/(W*N02));      %Energy when PU is present
+
+
+if E1>t
+    Pdc=Pdc+1;
+else
+end
+if E0>t
+    Pfc=Pfc+1;
+else
+end
+end
+Pd=Pdc/rel;
+Pf=Pfc/rel;
+   
+  
+for l=n:1:K
+Qd=Qd+(factorial(K)*(Pd^l)*((1-Pd)^(K-l))/(factorial(l)*factorial(K-l)));
+Qf=Qf+(factorial(K)*(Pf^l)*((1-Pf)^(K-l))/(factorial(l)*factorial(K-l)));
+end
+Qm=1-Qd;
+er=Qf+Qm;
+er1=[er1 er];
+end
+semilogy(tt1,er1,'*r')
+grid on;
+ylabel('Total Error rate');
+xlabel('Threshold');
+legend('n=1','n=2','n=3','n=4','n=5','n=6','n=7','n=8','n=9','n=10','n=5 by modelling');
+
+
