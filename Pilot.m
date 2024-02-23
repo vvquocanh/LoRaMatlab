@@ -23,5 +23,6 @@ obw(signalIQ,Fs) ;
 %% Received Signal
 message_out = LoRa_Rx(signalIQ,BW,SF,2,Fs,Fc - fc) ;
 %% Message Out
-disp(['Message Received = ' char(message_out)])
+disp('Message Received =')
+disp(message_out)
 
