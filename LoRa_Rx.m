@@ -15,7 +15,7 @@ function [message] = LoRa_Rx(signal,Bandwidth,SF,Coherece,Fs,df,varargin)
 %
 % Dr Bassel Al Homssi  
 % RMIT University 
-% Credit to rpp0 on https://github.com/rpp0/gr-lora
+% Credit to -rpp0 on https://github.com/rpp0/gr-lora
 
 if nargin == 6
     SNR                 = Inf ;
@@ -86,11 +86,66 @@ MessageStartInd = (NPreamb + 4.25)*M ;
 Nmessage        = floor(length(signal)/M - MessageStartInd/M) ;
 MessageEndInd   = Nmessage.*M + MessageStartInd ;
 
-MessageSignal   = signal(MessageStartInd+1:MessageEndInd).*loramod(zeros(1,Nmessage),SF,Bandwidth,Bandwidth,-1) ;
+MessageSignal   = signal(MessageStartInd+1:MessageEndInd).*loramod2(zeros(1,Nmessage),SF,Bandwidth,Bandwidth,-1) ;
 SymbolsDemod    = FSKDetection(MessageSignal,SF,Coherece) ;
 SymbolsMessage  = mod(SymbolsDemod - symbol_offset,2^SF) ;
 end
 function [y] = loramod(x,SF,BW,fs,varargin)
+% loramod LoRa modulates a symbol vector specified by x
+%
+%   in:  x          1xN symbol vector wher N=1-Inf 
+%                   with values {0,1,2,...,2^(SF)-1}
+%        BW         signal bandwidth of LoRa transmisson  
+%        SF         spreading factor   
+%        Fs         sampling frequency
+%        varargin{1} set polarity of chirp
+%
+%  out:  y          LoRa IQ waveform
+if (nargin < 4)
+    error(message('comm:pskmod:numarg1'));
+end
+
+if (nargin > 5)
+    error(message('comm:pskmod:numarg2'));
+end
+
+% Check that x is a positive integer
+if (~isreal(x) || any(any(ceil(x) ~= x)) || ~isnumeric(x))
+    error(message('comm:pskmod:xreal1'));
+end
+
+M       = 2^SF ;
+
+% Check that M is a positive integer
+if (~isreal(M) || ~isscalar(M) || M<=0 || (ceil(M)~=M) || ~isnumeric(M))
+    error(message('comm:pskmod:Mreal'));
+end
+
+% Check that x is within range
+if ((min(min(x)) < 0) || (max(max(x)) > (M-1)))
+    error(message('comm:pskmod:xreal2'));
+end
+
+% Polarity of Chirp
+if nargin == 4
+    Inv = 1 ;
+elseif nargin == 5
+    Inv = varargin{1} ;
+end
+% Symbol Constants
+Ts      = 2^SF/BW ;
+Ns      = fs.*M/BW ;
+
+gamma   = x/Ts ;
+beta    = BW/Ts ;
+
+time    = (0:Ns-1)'.*1/fs ;
+freq    = 918250000 + mod(gamma + beta.*time,BW) - BW/2 ;
+
+Theta   = cumtrapz(time,Inv.*freq) ;
+y       = reshape(exp(j.*2.*pi.*Theta),numel(Theta),1) ;
+end
+function [y] = loramod2(x,SF,BW,fs,varargin)
 % loramod LoRa modulates a symbol vector specified by x
 %
 %   in:  x          1xN symbol vector wher N=1-Inf 

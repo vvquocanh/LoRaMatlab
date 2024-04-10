@@ -362,8 +362,7 @@ gamma   = x/Ts ;
 beta    = BW/Ts ;
 
 time    = (0:Ns-1)'.*1/fs ;
-freq    = mod(gamma + Inv.*beta.*time,BW) - BW/2 ;
-
-Theta   = cumtrapz(time,freq) ;
+freq    = mod(gamma + Inv.*beta.*time,BW)  - (BW/2) ;
+Theta   = cumtrapz(time,freq);
 y       = reshape(exp(j.*2.*pi.*Theta),numel(Theta),1) ;
 end

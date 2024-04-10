@@ -24,7 +24,7 @@
     
     in_p = input('Do you want to enter second primary user Y/N:  ','s');
     
-    if(in_p == 'Y' | in_p == 'y')
+    if(in_p == 'Y' || in_p == 'y')
         a2 = ammod(x,F2,Fs);
     
     end
@@ -71,7 +71,6 @@ while(1)
         c3 = Pxx(62)*10000 ;
         c4 = Pxx(89)*10000 ;
         c5 = Pxx(105)*10000 ;
-       
         
         gamma=8000;
         
